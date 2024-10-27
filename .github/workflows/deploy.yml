@@ -34,18 +34,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Login to Heroku Container Registry
+      # Login to Heroku using API key directly
+      - name: Login to Heroku
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
-        run: heroku container:login
+        run: |
+          cat > ~/.netrc <<EOF
+            machine api.heroku.com
+              login ${{ secrets.HEROKU_EMAIL }}
+              password ${{ secrets.HEROKU_AUTH_TOKEN }}
+            machine git.heroku.com
+              login ${{ secrets.HEROKU_EMAIL }}
+              password ${{ secrets.HEROKU_AUTH_TOKEN }}
+          EOF
 
+      # Deploy to Heroku
       - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
-        with:
-          heroku_api_key: ${{secrets.HEROKU_AUTH_TOKEN}}
-          heroku_app_name: "voter-rideshare"  # Replace with your app name
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: false
-          branch: "main"
         env:
-          HD_HEROKU_API_KEY: ${{secrets.HEROKU_AUTH_TOKEN}}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
+          HEROKU_APP_NAME: "voter-rideshare" # Replace with your app name
+        run: |
+          git remote add heroku https://git.heroku.com/$HEROKU_APP_NAME.git
+          git push heroku main
