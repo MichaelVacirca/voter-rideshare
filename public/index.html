@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoteRide - Connect Voters with Rides</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>VoteRide</h1>
+            <p class="subtitle">Connecting voters with volunteer drivers</p>
+        </header>
+
+        <div class="form-section">
+            <h2>Need a ride to vote?</h2>
+            <form id="riderForm">
+                <div class="form-group">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="pickup">Pickup Address:</label>
+                    <input type="text" id="pickup" required>
+                </div>
+                <div class="form-group">
+                    <label for="polling">Polling Location:</label>
+                    <input type="text" id="polling" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Preferred Pickup Time:</label>
+                    <input type="datetime-local" id="time" required>
+                </div>
+                <button type="submit" class="btn-primary">Request Ride</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Want to volunteer as a driver?</h2>
+            <form id="driverForm">
+                <div class="form-group">
+                    <label for="driverName">Full Name:</label>
+                    <input type="text" id="driverName" required>
+                </div>
+                <div class="form-group">
+                    <label for="driverPhone">Phone Number:</label>
+                    <input type="tel" id="driverPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="driverEmail">Email:</label>
+                    <input type="email" id="driverEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="vehicle">Vehicle Type:</label>
+                    <input type="text" id="vehicle" placeholder="e.g., Toyota Camry" required>
+                </div>
+                <div class="form-group">
+                    <label for="seats">Available Seats:</label>
+                    <input type="number" id="seats" min="1" max="8" required>
+                </div>
+                <div class="form-group">
+                    <label for="availability">Available Hours:</label>
+                    <select id="availability" multiple>
+                        <option value="morning">Morning (8am - 12pm)</option>
+                        <option value="afternoon">Afternoon (12pm - 4pm)</option>
+                        <option value="evening">Evening (4pm - 8pm)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-secondary">Register as Driver</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 VoteRide. Helping every voter reach the polls.</p>
+    </footer>
+
+    <div id="notification" class="notification"></div>
+    <script src="/scripts.js"></script>
+</body>
+</html>
