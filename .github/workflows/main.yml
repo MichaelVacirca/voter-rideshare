@@ -21,10 +21,9 @@ jobs:
       - name: Install pnpm globally
         run: npm install -g pnpm@8
 
-      - name: Add pnpm to PATH
+      - name: Add pnpm to PATH using environment file
         run: |
-          export PATH=$(npm bin -g):$PATH
-          echo "::add-path::$(npm bin -g)"
+          echo "$(npm bin -g)" >> $GITHUB_PATH
 
       - name: Verify pnpm Installation
         run: pnpm --version
