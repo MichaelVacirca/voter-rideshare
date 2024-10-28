@@ -1,7 +1,7 @@
-require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
 
 // Create an instance of Express
 const app = express();
@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// MongoDB connection from environment variables
+// MongoDB connection
 const mongoURI = process.env.MONGODB_URI;
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
@@ -24,6 +24,11 @@ mongoose.connect(mongoURI, {
 // Routes
 const rideRoutes = require('./routes/rideRoutes');
 app.use('/api/rides', rideRoutes);
+
+// Define root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the Voter Rideshare API!');
+});
 
 // Server listen
 const PORT = process.env.PORT || 5000;
