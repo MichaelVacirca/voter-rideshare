@@ -1,124 +1,69 @@
-// routes/rideRoutes.js - Ride Request and Offer Routes
+// rideRoutes.js - Backend route handling for ride sharing
 const express = require('express');
 const router = express.Router();
-const Ride = require('../models/Ride');
-const jwt = require('jsonwebtoken');
+const Ride = require('../models/Ride'); // Assuming Ride is your Mongoose model
 
-// Middleware to protect routes
-const auth = async (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.id;
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Unauthorized' });
-  }
-};
-
-// Register as a ride offer or request
-router.post('/register', auth, async (req, res) => {
+// Route to register a new ride (offer or request)
+router.post('/api/rides/register', async (req, res) => {
   const { rideType, pickupLocation, destination, time } = req.body;
 
+  console.log("Registering ride with type:", rideType); // Debugging log
   try {
-    // Ensure rideType is either 'offer' or 'request'
-    if (!['offer', 'request'].includes(rideType)) {
-      return res.status(400).json({ error: 'Invalid ride type' });
-    }
-
     const newRide = new Ride({
-      user: req.user,
       rideType,
       pickupLocation,
       destination,
       time,
-      status: 'pending',
+      status: 'pending'
     });
-
+    
     const savedRide = await newRide.save();
-    res.status(201).json({ message: 'Ride registered successfully', ride: savedRide });
-  } catch (err) {
-    res.status(400).json({ error: 'Failed to register ride' });
+    console.log("Ride successfully saved:", savedRide); // Debugging log
+    
+    res.status(201).json(savedRide);
+  } catch (error) {
+    console.error("Error saving ride:", error); // Log any error
+    res.status(500).json({ error: "Failed to register ride" });
   }
 });
 
-// Match a ride request with an offer
-router.get('/match', auth, async (req, res) => {
-  const { rideType, pickupLocation, destination } = req.query;
+// Route to search for rides based on parameters
+router.get('/api/rides/search', async (req, res) => {
+  const { pickupLocation, destination, rideType, time } = req.query;
 
+  console.log("Received Search Request with params:", req.query); // Log the parameters
   try {
-    // Determine the opposite ride type to find a match (e.g., request matches offer and vice versa)
-    const oppositeRideType = rideType === 'request' ? 'offer' : 'request';
+    const query = {};
+    if (rideType) query.rideType = rideType;
+    if (pickupLocation) query.pickupLocation = pickupLocation;
+    if (destination) query.destination = destination;
+    if (time) query.time = { $gte: new Date(time) }; // Example for filtering by time
 
-    // Find rides that match the destination and pickup location criteria
-    const matches = await Ride.find({
-      rideType: oppositeRideType,
-      pickupLocation,
-      destination,
-      status: 'pending',
-    });
-
-    if (matches.length === 0) {
-      return res.status(404).json({ message: 'No matching rides found' });
-    }
-
-    res.status(200).json(matches);
+    console.log("Constructed Query:", query); // Log the constructed query
+    const rides = await Ride.find(query);
+    console.log("Search Results:", rides); // Log the retrieved rides
+    res.json(rides);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error in Search:", err);
+    res.status(500).send("Server Error");
   }
 });
 
-// Update ride status to "matched" and associate the matched ride
-router.put('/match/:id', auth, async (req, res) => {
-  const { matchedRideId } = req.body;
+// Route to match a ride
+router.put('/api/rides/match/:rideId', async (req, res) => {
+  const { rideId } = req.params;
 
+  console.log("Matching ride with ID:", rideId); // Debugging log
   try {
-    // Update the current ride with the matched ride ID
-    const ride = await Ride.findById(req.params.id);
-    if (!ride) {
-      return res.status(404).json({ error: 'Ride not found' });
+    const updatedRide = await Ride.findByIdAndUpdate(rideId, { status: 'matched' }, { new: true });
+    if (!updatedRide) {
+      return res.status(404).json({ error: "Ride not found" });
     }
-
-    if (ride.user.toString() !== req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    // Update ride status and matched ride details
-    ride.status = 'matched';
-    ride.matchedWith = matchedRideId;
-    await ride.save();
-
-    // Update the matched ride as well
-    const matchedRide = await Ride.findById(matchedRideId);
-    matchedRide.status = 'matched';
-    matchedRide.matchedWith = req.params.id;
-    await matchedRide.save();
-
-    res.status(200).json({ message: 'Ride successfully matched', ride });
+    console.log("Ride successfully matched:", updatedRide); // Debugging log
+    res.json(updatedRide);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Search for rides
-router.get('/search', auth, async (req, res) => {
-  const { pickupLocation, destination } = req.query;
-
-  try {
-    // Search for rides that match the criteria, regardless of time
-    const availableRides = await Ride.find({
-      pickupLocation,
-      destination,
-      status: 'pending',
-    });
-
-    res.status(200).json(availableRides);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error matching ride:", err);
+    res.status(500).json({ error: "Failed to match the ride" });
   }
 });
 
