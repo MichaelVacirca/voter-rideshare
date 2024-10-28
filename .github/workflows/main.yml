@@ -1,15 +1,10 @@
-# Copyright (c) 2024 Michael Vacirca michael@michaelvacirca.com
-# MIT License
-# Path: /.github/workflows/main.yml
-# GitHub Actions workflow - automating our path to democracy!
-
 name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   HEROKU_APP_NAME: voter-rideshare
@@ -19,7 +14,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
 
@@ -69,6 +64,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Verify Heroku Secrets
+        run: |
+          if [ -z "$HEROKU_EMAIL" ] || [ -z "$HEROKU_AUTH_TOKEN" ]; then
+            echo "Heroku secrets are not set properly"
+            exit 1
+          fi
+
       - name: Create .netrc file for Heroku authentication
         run: |
           cat > ~/.netrc << EOF
@@ -83,6 +85,9 @@ jobs:
 
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Verify Heroku CLI Installation
+        run: heroku --version
 
       - name: Log in to Heroku Container Registry
         run: heroku container:login
@@ -102,11 +107,9 @@ jobs:
 
       - name: Verify deployment
         run: |
-          # Wait for app to be ready
           echo "Waiting for deployment to stabilize..."
           sleep 30
           
-          # Check dyno status
           DYNO_STATUS=$(heroku ps --app $HEROKU_APP_NAME --json)
           if ! echo "$DYNO_STATUS" | grep -q '"state":"up"'; then
             echo "Dyno is not running properly"
@@ -114,9 +117,8 @@ jobs:
             exit 1
           fi
           
-          # Check application health
-          HEALTH_CHECK=$(curl -s -f -L "https://$HEROKU_APP_NAME.herokuapp.com/api/health")
-          if ! echo "$HEALTH_CHECK" | grep -q '"status":"healthy"'; then
+          HEALTH_CHECK=$(curl -s -f -L "https://$HEROKU_APP_NAME.herokuapp.com/api/health" || echo "fail")
+          if [ "$HEALTH_CHECK" == "fail" ] || ! echo "$HEALTH_CHECK" | grep -q '"status":"healthy"'; then
             echo "Health check failed"
             echo "$HEALTH_CHECK"
             exit 1
