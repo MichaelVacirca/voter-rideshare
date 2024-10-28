@@ -31,6 +31,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Set Heroku Stack to Container
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
+        run: |
+          heroku stack:set container -a voter-rideshare
+          
       - name: Build, Push and Release a Docker container to Heroku
         uses: gonuit/heroku-docker-deploy@v1.3.3
         with:
