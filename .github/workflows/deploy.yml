@@ -28,30 +28,16 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Build, Push and Release a Docker container to Heroku
+        uses: gonuit/heroku-docker-deploy@v1.3.3
         with:
-          fetch-depth: 0
-
-      - name: Install Heroku CLI
-        run: |
-          curl https://cli-assets.heroku.com/install.sh | sh
-          
-      - name: Add Heroku Remote
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
-        run: |
-          heroku git:remote -a voter-rideshare
-          
-      - name: Configure Git
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-          
-      - name: Deploy to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
-        run: |
-          git push heroku HEAD:main --force
+          email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_api_key: ${{ secrets.HEROKU_AUTH_TOKEN }}
+          heroku_app_name: voter-rideshare
+          dockerfile_directory: ./
+          dockerfile_name: Dockerfile
+          docker_options: "--no-cache"
+          process_type: web
