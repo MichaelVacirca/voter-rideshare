@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [rides, setRides] = useState([]);
   const [availableRequests, setAvailableRequests] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   // Check if the user is logged in
@@ -20,6 +21,8 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login'); // Redirect to login if the user is not authenticated
+    } else {
+      setIsAuthenticated(true); // Set user as authenticated
     }
   }, [navigate]);
 
@@ -59,8 +62,10 @@ const Dashboard = () => {
 
   // Load available ride requests on component mount
   useEffect(() => {
-    loadAvailableRequests();
-  }, []);
+    if (isAuthenticated) {
+      loadAvailableRequests();
+    }
+  }, [isAuthenticated]);
 
   const handleMatchRide = async (rideId) => {
     try {
@@ -108,6 +113,10 @@ const Dashboard = () => {
       alert('Failed to register ride');
     }
   };
+
+  if (!isAuthenticated) {
+    return null; // Don't render anything until authentication is confirmed
+  }
 
   return (
     <div className="dashboard">
