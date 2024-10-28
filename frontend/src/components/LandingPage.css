@@ -8,6 +8,10 @@ body, html {
 .landing-page {
   text-align: center;
   color: #333;
+  background: linear-gradient(to bottom, #f0f8ff, #87cefa);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .navbar {
@@ -36,15 +40,15 @@ body, html {
 }
 
 .hero-section {
-  background-image: url('https://images.unsplash.com/photo-1555967526-37949d0c5746');
-  background-size: cover;
-  background-position: center;
-  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
   padding: 100px 20px;
 }
 
 .hero-content {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.8);
   display: inline-block;
   padding: 30px;
   border-radius: 10px;
