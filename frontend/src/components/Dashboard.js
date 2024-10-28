@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const [action, setAction] = useState(''); // 'offer' or 'request'
   const [pickupLocation, setPickupLocation] = useState('');
   const [destination, setDestination] = useState('');
   const [time, setTime] = useState('');
@@ -67,12 +68,51 @@ const Dashboard = () => {
     }
   };
 
+  const handleRegisterRide = async (e) => {
+    e.preventDefault();
+    if (!action) {
+      alert('Please select either needing a ride or offering a ride.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.post('/api/rides/register', {
+        rideType: action,
+        pickupLocation,
+        destination,
+        time,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setLoading(false);
+      alert(`Ride ${action} registered successfully!`);
+      setPickupLocation('');
+      setDestination('');
+      setTime('');
+      setAction('');
+      loadAvailableRequests(); // Refresh available requests
+    } catch (err) {
+      setLoading(false);
+      alert('Failed to register ride');
+    }
+  };
+
   return (
     <div className="dashboard">
       <Navbar />
       <div className="dashboard-container">
-        <h2>Find a Ride</h2>
-        <form onSubmit={searchRides} className="search-form">
+        <h2>Register for a Ride</h2>
+        <div className="ride-options">
+          <button onClick={() => setAction('offer')} className={`btn ${action === 'offer' ? 'selected' : ''}`}>
+            Offer a Ride
+          </button>
+          <button onClick={() => setAction('request')} className={`btn ${action === 'request' ? 'selected' : ''}`}>
+            Need a Ride
+          </button>
+        </div>
+        <form onSubmit={handleRegisterRide} className="ride-form">
           <input
             type="text"
             placeholder="Pickup Location"
@@ -97,7 +137,7 @@ const Dashboard = () => {
             className="form-input"
           />
           <button type="submit" className="btn primary">
-            {loading ? 'Searching...' : 'Search Rides'}
+            {loading ? 'Registering...' : `Register as ${action === 'offer' ? 'Offer' : 'Request'}`}
           </button>
         </form>
 
@@ -156,4 +196,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

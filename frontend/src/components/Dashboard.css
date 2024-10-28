@@ -19,7 +19,7 @@ body, html {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.search-form {
+.search-form, .ride-form {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -70,4 +70,15 @@ body, html {
 
 .match-btn:hover {
   background-color: #218838;
+}
+
+.ride-options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn.selected {
+  background-color: #0056b3;
+  color: white;
 }
