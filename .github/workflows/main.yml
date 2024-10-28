@@ -16,23 +16,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      # Step 1: Checkout code
+      - name: Check out code
+        uses: actions/checkout@v3
 
+      # Step 2: Install pnpm globally and add to PATH
       - name: Install pnpm globally
         run: npm install -g pnpm@8
 
-      - name: Add pnpm to PATH using environment file
-        run: |
-          echo "$(npm bin -g)" >> $GITHUB_PATH
+      - name: Add pnpm to PATH using $GITHUB_PATH
+        run: echo "$(npm bin -g)" >> $GITHUB_PATH
 
       - name: Verify pnpm Installation
         run: pnpm --version
 
+      # Step 3: Set up Node.js (after ensuring pnpm is installed)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
 
+      # Step 4: Cache pnpm dependencies
       - name: Get pnpm store directory
         id: pnpm-cache
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v3
         name: Setup pnpm cache
@@ -42,6 +50,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      # Step 5: Install dependencies, type-check, lint, and test
       - name: Install dependencies
         run: pnpm install
 
@@ -54,21 +63,17 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-
   deploy:
-    needs: test
+    needs: test  # Ensure tests pass before deployment
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - uses: actions/checkout@v3
+      # Step 1: Checkout code for deployment
+      - name: Check out code
+        uses: actions/checkout@v3
 
+      # Step 2: Verify Heroku Secrets
       - name: Verify Heroku Secrets
         run: |
           if [ -z "$HEROKU_EMAIL" ] || [ -z "$HEROKU_AUTH_TOKEN" ]; then
@@ -76,6 +81,7 @@ jobs:
             exit 1
           fi
 
+      # Step 3: Configure Heroku authentication
       - name: Create .netrc file for Heroku authentication
         run: |
           cat > ~/.netrc << EOF
@@ -88,15 +94,18 @@ jobs:
           EOF
           chmod 600 ~/.netrc
 
+      # Step 4: Install and verify Heroku CLI
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
 
       - name: Verify Heroku CLI Installation
         run: heroku --version
 
+      # Step 5: Login to Heroku Container Registry
       - name: Log in to Heroku Container Registry
         run: heroku container:login
 
+      # Step 6: Build and push Docker image to Heroku
       - name: Build and push Docker image
         run: |
           docker build \
@@ -104,33 +113,37 @@ jobs:
             -t "registry.heroku.com/$HEROKU_APP_NAME/web" .
           docker push "registry.heroku.com/$HEROKU_APP_NAME/web"
 
+      # Step 7: Release Docker container to Heroku
       - name: Release to Heroku
         run: heroku container:release web --app $HEROKU_APP_NAME
 
+      # Step 8: Run database migrations on Heroku
       - name: Run database migrations
         run: heroku run --app $HEROKU_APP_NAME pnpm db:migrate
 
+      # Step 9: Verify deployment
       - name: Verify deployment
         run: |
           echo "Waiting for deployment to stabilize..."
           sleep 30
-          
+
           DYNO_STATUS=$(heroku ps --app $HEROKU_APP_NAME --json)
           if ! echo "$DYNO_STATUS" | grep -q '"state":"up"'; then
             echo "Dyno is not running properly"
             echo "$DYNO_STATUS"
             exit 1
           fi
-          
+
           HEALTH_CHECK=$(curl -s -f -L "https://$HEROKU_APP_NAME.herokuapp.com/api/health" || echo "fail")
           if [ "$HEALTH_CHECK" == "fail" ] || ! echo "$HEALTH_CHECK" | grep -q '"status":"healthy"'; then
             echo "Health check failed"
             echo "$HEALTH_CHECK"
             exit 1
           fi
-          
+
           echo "Deployment verified successfully!"
 
+      # Step 10: Display logs if deployment fails
       - name: Display application logs on failure
         if: failure()
         run: |
