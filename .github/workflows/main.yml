@@ -20,23 +20,27 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install pnpm globally and add it to PATH
-      - name: Install pnpm globally
-        run: npm install -g pnpm@8
+      # Step 2: Install pnpm and Prisma globally
+      - name: Install pnpm and Prisma globally
+        run: |
+          npm install -g pnpm@8
+          pnpm add -g prisma
 
       - name: Add pnpm to PATH using $GITHUB_PATH
         run: echo "$(npm bin -g)" >> $GITHUB_PATH
 
-      - name: Verify pnpm Installation
-        run: pnpm --version
+      - name: Verify pnpm and Prisma Installation
+        run: |
+          pnpm --version
+          prisma --version
 
-      # Step 3: Install dependencies (including Prisma)
-      - name: Install dependencies
-        run: pnpm install
-
-      # Step 4: Run Prisma Generate
+      # Step 3: Generate Prisma Client
       - name: Run Prisma Generate
         run: pnpm prisma generate
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: pnpm install
 
       # Step 5: Set up Node.js
       - name: Setup Node.js
