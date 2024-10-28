@@ -1,20 +1,17 @@
 {
   "name": "voter-rideshare",
   "version": "1.0.0",
-  "description": "Voter rideshare application",
-  "main": "src/server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node index.js"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=16.x"
   },
   "dependencies": {
-    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mongoose": "^7.0.3"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.7"
+    "mongoose": "^6.8.0",
+    "dotenv": "^16.0.0",
+    "cors": "^2.8.5"
   }
 }
