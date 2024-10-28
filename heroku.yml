@@ -1,7 +1,6 @@
 build:
-  # Since you're deploying a Node.js app, specify the build process using Node.js
   buildpacks:
-    - https://github.com/heroku/heroku-buildpack-nodejs
+    - heroku/nodejs
 
 run:
-  web: node index.js
+  web: npm start
