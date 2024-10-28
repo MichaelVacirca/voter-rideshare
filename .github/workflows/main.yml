@@ -24,13 +24,16 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Install pnpm
+      - name: Install pnpm globally
+        run: npm install -g pnpm@8
+
+      - name: Add pnpm to PATH
         run: |
-          npm install -g pnpm@8
-          echo "::add-path::$(npm bin -g)"  # Ensure pnpm is in PATH
+          export PATH=$(npm bin -g):$PATH
+          echo "::add-path::$(npm bin -g)"
 
       - name: Verify pnpm Installation
-        run: pnpm --version  # Check if pnpm is properly installed
+        run: pnpm --version
 
       - name: Get pnpm store directory
         id: pnpm-cache
