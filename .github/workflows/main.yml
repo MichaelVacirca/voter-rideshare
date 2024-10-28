@@ -129,10 +129,3 @@ jobs:
         run: |
           echo "Fetching recent logs..."
           heroku logs --tail --app $HEROKU_APP_NAME
-
-notifications:
-  email:
-    recipients:
-      - michael@michaelvacirca.com
-    on_success: change
-    on_failure: always
