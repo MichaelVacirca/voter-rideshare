@@ -1,19 +1,32 @@
+# Copyright (c) 2024 Michael Vacirca michael@michaelvacirca.com
+# MIT License
+# Path: /docker-compose.yml
+# Docker Compose configuration - orchestrating our development environment!
+
 version: '3.8'
 
 services:
-  app:
-    build: .
+  web:
+    build:
+      context: .
+      target: runner
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/voter-rideshare
-      - REDIS_URL=redis://redis:6379
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_URL=${REDIS_URL}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
     depends_on:
-      - mongo
+      - mongodb
       - redis
 
-  mongo:
+  mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"
@@ -24,6 +37,9 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
   mongodb_data:
+  redis_data:

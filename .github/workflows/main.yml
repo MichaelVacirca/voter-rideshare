@@ -1,0 +1,138 @@
+# Copyright (c) 2024 Michael Vacirca michael@michaelvacirca.com
+# MIT License
+# Path: /.github/workflows/main.yml
+# GitHub Actions workflow - automating our path to democracy!
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  HEROKU_APP_NAME: voter-rideshare
+  HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+  HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create .netrc file for Heroku authentication
+        run: |
+          cat > ~/.netrc << EOF
+          machine api.heroku.com
+            login $HEROKU_EMAIL
+            password $HEROKU_AUTH_TOKEN
+          machine git.heroku.com
+            login $HEROKU_EMAIL
+            password $HEROKU_AUTH_TOKEN
+          EOF
+          chmod 600 ~/.netrc
+
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Log in to Heroku Container Registry
+        run: heroku container:login
+
+      - name: Build and push Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_APP_URL="https://$HEROKU_APP_NAME.herokuapp.com" \
+            -t "registry.heroku.com/$HEROKU_APP_NAME/web" .
+          docker push "registry.heroku.com/$HEROKU_APP_NAME/web"
+
+      - name: Release to Heroku
+        run: heroku container:release web --app $HEROKU_APP_NAME
+
+      - name: Run database migrations
+        run: heroku run --app $HEROKU_APP_NAME pnpm db:migrate
+
+      - name: Verify deployment
+        run: |
+          # Wait for app to be ready
+          echo "Waiting for deployment to stabilize..."
+          sleep 30
+          
+          # Check dyno status
+          DYNO_STATUS=$(heroku ps --app $HEROKU_APP_NAME --json)
+          if ! echo "$DYNO_STATUS" | grep -q '"state":"up"'; then
+            echo "Dyno is not running properly"
+            echo "$DYNO_STATUS"
+            exit 1
+          fi
+          
+          # Check application health
+          HEALTH_CHECK=$(curl -s -f -L "https://$HEROKU_APP_NAME.herokuapp.com/api/health")
+          if ! echo "$HEALTH_CHECK" | grep -q '"status":"healthy"'; then
+            echo "Health check failed"
+            echo "$HEALTH_CHECK"
+            exit 1
+          fi
+          
+          echo "Deployment verified successfully!"
+
+      - name: Display application logs on failure
+        if: failure()
+        run: |
+          echo "Fetching recent logs..."
+          heroku logs --tail --app $HEROKU_APP_NAME
+
+notifications:
+  email:
+    recipients:
+      - michael@michaelvacirca.com
+    on_success: change
+    on_failure: always

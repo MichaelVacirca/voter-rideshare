@@ -1,9 +1,24 @@
+# Copyright (c) 2024 Michael Vacirca michael@michaelvacirca.com
+# MIT License
+# Path: /heroku.yml
+# Heroku deployment configuration - shipping democracy to the cloud!
+
 setup:
   addons:
-    - plan: heroku-postgresql:hobby-dev
-      as: DATABASE
+    - plan: mongoatlas:sandbox
+      as: MONGODB
+    - plan: rediscloud:30
+      as: REDIS
+    - plan: scheduler:standard
+      as: SCHEDULER
+
 build:
   docker:
     web: Dockerfile
+  config:
+    NODE_ENV: production
+    NPM_CONFIG_PRODUCTION: false
+
 run:
   web: npm start
+  cron: node scripts/cron.js

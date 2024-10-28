@@ -1,0 +1,27 @@
+{
+  "_copyright": "Copyright (c) 2024 Michael Vacirca michael@michaelvacirca.com",
+  "_license": "MIT License",
+  "_path": "/messages/en.json",
+  "Index": {
+    "title": "Voter Rideshare",
+    "description": "Connecting voters with volunteer drivers",
+    "requestRide": "Request a Ride",
+    "offerRide": "Offer to Drive",
+    "about": "About",
+    "howItWorks": "How It Works"
+  },
+  "Navigation": {
+    "home": "Home",
+    "rides": "Rides",
+    "profile": "Profile",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "Common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "submit": "Submit",
+    "cancel": "Cancel"
+  }
+}
