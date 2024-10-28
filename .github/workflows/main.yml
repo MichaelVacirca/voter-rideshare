@@ -18,12 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-
       - name: Install pnpm globally
         run: npm install -g pnpm@8
 
@@ -34,6 +28,12 @@ jobs:
 
       - name: Verify pnpm Installation
         run: pnpm --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
 
       - name: Get pnpm store directory
         id: pnpm-cache
