@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to Heroku
 
 on:
@@ -29,23 +28,25 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
 
-      - name: Login to Heroku Container Registry
+      - name: Set Heroku Stack to Container
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
-        run: heroku container:login
-
-      - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
+        run: |
+          heroku stack:set container -a voter-rideshare
+          
+      - name: Build, Push and Release a Docker container to Heroku
+        uses: gonuit/heroku-docker-deploy@v1.3.3
         with:
-          heroku_api_key: ${{secrets.HEROKU_AUTH_TOKEN}}
-          heroku_app_name: "voter-rideshare"  # Replace with your app name
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: false
-          branch: "main"
-        env:
-          HD_HEROKU_API_KEY: ${{secrets.HEROKU_AUTH_TOKEN}}
+          email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_api_key: ${{ secrets.HEROKU_AUTH_TOKEN }}
+          heroku_app_name: voter-rideshare
+          dockerfile_directory: ./
+          dockerfile_name: Dockerfile
+          docker_options: "--no-cache"
+          process_type: web
