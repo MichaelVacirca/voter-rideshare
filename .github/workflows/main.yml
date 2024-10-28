@@ -25,14 +25,15 @@ jobs:
           cache: 'pnpm'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: false
+        run: |
+          npm install -g pnpm@8
+          echo "::add-path::$(npm bin -g)"  # Ensure pnpm is in PATH
+
+      - name: Verify pnpm Installation
+        run: pnpm --version  # Check if pnpm is properly installed
 
       - name: Get pnpm store directory
         id: pnpm-cache
-        shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
