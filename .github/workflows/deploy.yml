@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to Heroku
 
 on:
@@ -36,13 +35,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Use the official Heroku action
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+          
+      - name: Add Heroku Remote
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
+        run: |
+          heroku git:remote -a voter-rideshare
+          
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          
       - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_AUTH_TOKEN }}
-          heroku_app_name: "voter-rideshare"  # Replace with your app name
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          justlogin: false
-          branch: "main"
-          dontautocreate: true
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_AUTH_TOKEN }}
+        run: |
+          git push heroku HEAD:main --force
