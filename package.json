@@ -1,5 +1,5 @@
 {
-  "name": "voter-rideshare-app",
+  "name": "voter-rideshare",
   "version": "1.0.0",
   "description": "Full-stack application for voter rideshare",
   "scripts": {
