@@ -1,6 +1,7 @@
 // Dashboard.js - Main UI for ride sharing (React)
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import './Dashboard.css';
 
@@ -12,6 +13,15 @@ const Dashboard = () => {
   const [rides, setRides] = useState([]);
   const [availableRequests, setAvailableRequests] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Check if the user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login'); // Redirect to login if the user is not authenticated
+    }
+  }, [navigate]);
 
   // Function to search for rides
   const searchRides = async (e) => {
