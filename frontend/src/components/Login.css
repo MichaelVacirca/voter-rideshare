@@ -10,14 +10,12 @@ body, html {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-image: url('https://images.unsplash.com/photo-1556740749-887f6717d7e4');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(to right, #ffffff, #e6e6e6);
   color: #333;
 }
 
 .login-container {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 40px;
   border-radius: 10px;
   width: 100%;
@@ -45,7 +43,7 @@ body, html {
 }
 
 .btn.primary {
-  background-color: #28a745;
+  background-color: #007BFF;
   color: white;
   padding: 10px;
   border: none;
@@ -56,7 +54,7 @@ body, html {
 }
 
 .btn.primary:hover {
-  background-color: #218838;
+  background-color: #0056b3;
 }
 
 .register-link {
