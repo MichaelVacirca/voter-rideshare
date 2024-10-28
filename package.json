@@ -2,7 +2,7 @@
   "name": "voter-rideshare",
   "version": "1.0.0",
   "description": "Voter rideshare application",
-  "main": "src/server.js", // Make sure this is correct
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"
   },
