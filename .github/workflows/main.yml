@@ -30,26 +30,30 @@ jobs:
       - name: Verify pnpm Installation
         run: pnpm --version
 
-      # Step 3: Install dependencies
+      # Step 3: Install dependencies (including Prisma)
       - name: Install dependencies
         run: pnpm install
 
-      # Step 4: Set up Node.js
+      # Step 4: Run Prisma Generate
+      - name: Run Prisma Generate
+        run: pnpm prisma generate
+
+      # Step 5: Set up Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'pnpm'
 
-      # Step 5: Type-check the code
+      # Step 6: Type-check the code
       - name: Type check
         run: pnpm type-check
 
-      # Step 6: Lint the code
+      # Step 7: Lint the code
       - name: Lint
         run: pnpm lint
 
-      # Step 7: Run tests
+      # Step 8: Run tests
       - name: Run tests
         run: pnpm test
 
