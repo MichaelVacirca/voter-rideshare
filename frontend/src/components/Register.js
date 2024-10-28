@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import Navbar from './Navbar';
 import './Register.css';
 
 const Register = () => {
@@ -30,6 +31,7 @@ const Register = () => {
 
   return (
     <div className="register-page">
+      <Navbar />
       <div className="register-container">
         <h2>Create Your Account</h2>
         <form onSubmit={handleRegister} className="register-form">

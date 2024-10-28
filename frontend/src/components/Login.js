@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import Navbar from './Navbar';
 import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -18,7 +19,7 @@ const Login = () => {
         password,
       });
 
-      localStorage.setItem('token', response.data.token); // Store token in local storage
+      localStorage.setItem('token', response.data.token);
       setLoading(false);
       navigate('/dashboard');
     } catch (err) {
@@ -29,6 +30,7 @@ const Login = () => {
 
   return (
     <div className="login-page">
+      <Navbar />
       <div className="login-container">
         <h2>Login to Voter Rideshare</h2>
         <form onSubmit={handleLogin} className="login-form">
