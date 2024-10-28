@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
+      # Step 1: Check out the code
       - name: Check out code
         uses: actions/checkout@v3
 
-      # Step 2: Install pnpm globally and add to PATH
+      # Step 2: Install pnpm globally and add it to PATH
       - name: Install pnpm globally
         run: npm install -g pnpm@8
 
@@ -30,36 +30,26 @@ jobs:
       - name: Verify pnpm Installation
         run: pnpm --version
 
-      # Step 3: Set up Node.js (after ensuring pnpm is installed)
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # Step 4: Set up Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'pnpm'
 
-      # Step 4: Cache pnpm dependencies
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      # Step 5: Install dependencies, type-check, lint, and test
-      - name: Install dependencies
-        run: pnpm install
-
+      # Step 5: Type-check the code
       - name: Type check
         run: pnpm type-check
 
+      # Step 6: Lint the code
       - name: Lint
         run: pnpm lint
 
+      # Step 7: Run tests
       - name: Run tests
         run: pnpm test
 
@@ -69,7 +59,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      # Step 1: Checkout code for deployment
+      # Step 1: Check out the code for deployment
       - name: Check out code
         uses: actions/checkout@v3
 
@@ -94,14 +84,14 @@ jobs:
           EOF
           chmod 600 ~/.netrc
 
-      # Step 4: Install and verify Heroku CLI
+      # Step 4: Install Heroku CLI and verify installation
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
 
       - name: Verify Heroku CLI Installation
         run: heroku --version
 
-      # Step 5: Login to Heroku Container Registry
+      # Step 5: Log in to Heroku Container Registry
       - name: Log in to Heroku Container Registry
         run: heroku container:login
 
@@ -121,7 +111,7 @@ jobs:
       - name: Run database migrations
         run: heroku run --app $HEROKU_APP_NAME pnpm db:migrate
 
-      # Step 9: Verify deployment
+      # Step 9: Verify the deployment
       - name: Verify deployment
         run: |
           echo "Waiting for deployment to stabilize..."
