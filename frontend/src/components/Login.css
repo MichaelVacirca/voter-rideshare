@@ -12,6 +12,7 @@ body, html {
   min-height: 100vh;
   background: linear-gradient(to right, #ffffff, #e6e6e6);
   color: #333;
+  padding-top: 80px; /* Add padding to prevent form from being hidden under navbar */
 }
 
 .login-container {
