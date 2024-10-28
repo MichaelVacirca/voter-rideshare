@@ -10,14 +10,12 @@ body, html {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-image: url('https://images.unsplash.com/photo-1554151228-14d9def656e4');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(to right, #f0f8ff, #dcdcdc);
   color: #333;
 }
 
 .register-container {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 40px;
   border-radius: 10px;
   width: 100%;
