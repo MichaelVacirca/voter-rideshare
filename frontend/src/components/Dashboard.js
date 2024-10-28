@@ -54,8 +54,10 @@ const Dashboard = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
+      console.log('Available Requests:', response.data);
       setAvailableRequests(response.data);
     } catch (err) {
+      console.error('Failed to load available ride requests:', err.response ? err.response.data : err.message);
       alert('Failed to load available ride requests');
     }
   };
@@ -102,6 +104,7 @@ const Dashboard = () => {
         },
       });
       setLoading(false);
+      console.log(response.data); 
       alert(`Ride ${action} registered successfully!`);
       setPickupLocation('');
       setDestination('');
@@ -110,6 +113,7 @@ const Dashboard = () => {
       loadAvailableRequests(); // Refresh available requests
     } catch (err) {
       setLoading(false);
+      console.error('Error:', err.response ? err.response.data : err.message); // Log error details
       alert('Failed to register ride');
     }
   };
