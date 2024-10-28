@@ -1,47 +1,37 @@
-// Dashboard.js - Main UI for ride sharing (React)
 import React, { useState } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const [action, setAction] = useState(''); // 'offer' or 'request'
   const [pickupLocation, setPickupLocation] = useState('');
   const [destination, setDestination] = useState('');
   const [time, setTime] = useState('');
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const searchRides = async (e) => {
+  const handleRegisterRide = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await axios.get('/api/rides/search', {
-        params: { pickupLocation, destination, time },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      setRides(response.data);
-      setLoading(false);
-    } catch (err) {
-      setLoading(false);
-      alert('Failed to search for rides');
+    if (!action) {
+      alert('Please select either needing a ride or offering a ride.');
+      return;
     }
-  };
 
-  const handleMatchRide = async (rideId) => {
     try {
-      const response = await axios.put(`/api/rides/match/${rideId}`, {
-        matchedRideId: rideId,
+      const response = await axios.post('/api/rides/register', {
+        rideType: action,
+        pickupLocation,
+        destination,
+        time,
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      alert('Ride successfully matched!');
-      setRides(rides.filter((ride) => ride._id !== rideId));
+      alert(`Ride ${action} registered successfully!`);
     } catch (err) {
-      alert('Failed to match the ride');
+      alert('Failed to register ride');
     }
   };
 
@@ -49,8 +39,16 @@ const Dashboard = () => {
     <div className="dashboard">
       <Navbar />
       <div className="dashboard-container">
-        <h2>Find a Ride</h2>
-        <form onSubmit={searchRides} className="search-form">
+        <h2>Register for a Ride</h2>
+        <div className="ride-options">
+          <button onClick={() => setAction('offer')} className={`btn ${action === 'offer' ? 'selected' : ''}`}>
+            Offer a Ride
+          </button>
+          <button onClick={() => setAction('request')} className={`btn ${action === 'request' ? 'selected' : ''}`}>
+            Need a Ride
+          </button>
+        </div>
+        <form onSubmit={handleRegisterRide} className="ride-form">
           <input
             type="text"
             placeholder="Pickup Location"
@@ -75,34 +73,9 @@ const Dashboard = () => {
             className="form-input"
           />
           <button type="submit" className="btn primary">
-            {loading ? 'Searching...' : 'Search Rides'}
+            Register {action === 'offer' ? 'as an Offer' : 'as a Request'}
           </button>
         </form>
-
-        <div className="ride-results">
-          <h3>Available Rides:</h3>
-          {rides.length > 0 ? (
-            <ul>
-              {rides.map((ride) => (
-                <li key={ride._id} className="ride-item">
-                  <div>
-                    <strong>From:</strong> {ride.pickupLocation} <br />
-                    <strong>To:</strong> {ride.destination} <br />
-                    <strong>Time:</strong> {new Date(ride.time).toLocaleString()}
-                  </div>
-                  <button
-                    onClick={() => handleMatchRide(ride._id)}
-                    className="btn match-btn"
-                  >
-                    Match Ride
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No rides available</p>
-          )}
-        </div>
       </div>
     </div>
   );
