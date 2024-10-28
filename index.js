@@ -1,7 +1,8 @@
+// index.js - Entry Point for the Server
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
 
 // Create an instance of Express
 const app = express();
@@ -21,8 +22,12 @@ mongoose.connect(mongoURI, {
   console.error('Database connection error:', err);
 });
 
-// Routes
+// Import Routes
+const userRoutes = require('./routes/userRoutes');
 const rideRoutes = require('./routes/rideRoutes');
+
+// Use Routes
+app.use('/api/users', userRoutes);
 app.use('/api/rides', rideRoutes);
 
 // Define root route
