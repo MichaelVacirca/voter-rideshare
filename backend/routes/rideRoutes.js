@@ -31,34 +31,6 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Get all ride requests/offers
-router.get('/', async (req, res) => {
-  try {
-    const rides = await Ride.find();
-    res.status(200).json(rides);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// Find matching rides
-router.get('/matches', auth, async (req, res) => {
-  const { location, destination, rideType } = req.query;
-
-  try {
-    const oppositeRideType = rideType === 'need' ? 'provide' : 'need';
-    const matches = await Ride.find({
-      location,
-      destination,
-      rideType: oppositeRideType,
-    });
-
-    res.status(200).json(matches);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 // Get all rides for a specific user
 router.get('/myrides', auth, async (req, res) => {
   try {
@@ -81,6 +53,84 @@ router.delete('/:id', auth, async (req, res) => {
     }
     await ride.remove();
     res.status(200).json({ message: 'Ride successfully canceled' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Match a ride request with an offer
+router.get('/match', auth, async (req, res) => {
+  const { rideType, pickupLocation, destination, time } = req.query;
+
+  try {
+    // Find a potential match based on the ride type (request matches offer and vice versa)
+    const oppositeRideType = rideType === 'request' ? 'offer' : 'request';
+
+    // Find rides with the opposite type, matching the destination, and are still pending
+    const matches = await Ride.find({
+      rideType: oppositeRideType,
+      pickupLocation,
+      destination,
+      status: 'pending',
+      time: { $gte: new Date(time).setMinutes(new Date(time).getMinutes() - 30) }, // +- 30 min
+    });
+
+    if (matches.length === 0) {
+      return res.status(404).json({ message: 'No matching rides found' });
+    }
+
+    res.status(200).json(matches);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Update ride status to "matched" and associate the matched ride
+router.put('/match/:id', auth, async (req, res) => {
+  const { matchedRideId } = req.body;
+
+  try {
+    // Update the current ride with the matched ride ID
+    const ride = await Ride.findById(req.params.id);
+    if (!ride) {
+      return res.status(404).json({ error: 'Ride not found' });
+    }
+
+    if (ride.user.toString() !== req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Update ride status and matched ride details
+    ride.status = 'matched';
+    ride.matchedWith = matchedRideId;
+    await ride.save();
+
+    // Update the matched ride as well
+    const matchedRide = await Ride.findById(matchedRideId);
+    matchedRide.status = 'matched';
+    matchedRide.matchedWith = req.params.id;
+    await matchedRide.save();
+
+    res.status(200).json({ message: 'Ride successfully matched', ride });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Search for rides
+router.get('/search', auth, async (req, res) => {
+  const { pickupLocation, destination, time } = req.query;
+
+  try {
+    // Search for rides that match the criteria
+    const availableRides = await Ride.find({
+      pickupLocation,
+      destination,
+      status: 'pending',
+      time: { $gte: new Date(time).setMinutes(new Date(time).getMinutes() - 30) }, // +- 30 min
+    });
+
+    res.status(200).json(availableRides);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

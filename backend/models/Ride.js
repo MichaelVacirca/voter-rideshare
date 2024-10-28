@@ -1,4 +1,3 @@
-// models/Ride.js - Ride Model
 const mongoose = require('mongoose');
 
 const RideSchema = new mongoose.Schema({
@@ -7,15 +6,12 @@ const RideSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  name: {
+  rideType: {
     type: String,
+    enum: ['request', 'offer'],
     required: true,
   },
-  contact: {
-    type: String,
-    required: true,
-  },
-  location: {
+  pickupLocation: {
     type: String,
     required: true,
   },
@@ -23,17 +19,22 @@ const RideSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rideType: {
-    type: String,
-    enum: ['need', 'provide'],
-    required: true,
-  },
   time: {
     type: Date,
     required: true,
-  }
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'matched', 'completed', 'canceled'],
+    default: 'pending',
+  },
+  matchedWith: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Ride',
+    default: null,
+  },
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 module.exports = mongoose.model('Ride', RideSchema);
